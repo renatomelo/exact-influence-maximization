@@ -1,0 +1,4 @@
+PATH = /opt/gurobi752/linux64/bin/
+GRB_LICENSE_FILE = /opt/gurobi752/linux64/gurobi.lic
+GUROBI_HOME = /opt/gurobi752/linux64/
+LD_LIBRARY_PATH = /opt/gurobi752/linux64/lib/
