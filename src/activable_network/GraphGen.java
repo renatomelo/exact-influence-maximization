@@ -33,6 +33,11 @@ public class GraphGen {
 		generator.generateGraph(g, vFactory, null);
 	}
 	
+	/**
+	 * Not working for now
+	 * @param g
+	 * @param size
+	 */
 	public void wattsStrogatz(Graph<Vertex, DefaultEdge> g, int size) {
 		WattsStrogatzGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new WattsStrogatzGraphGenerator<>(size, size/5, .35);
@@ -100,15 +105,36 @@ public class GraphGen {
 			h.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e));
 		return h;
 	}
+	
+	public Graph<Vertex, DefaultEdge> tree(Graph<Vertex, DefaultEdge> g, int size) {
+		ScaleFreeGraphGenerator<Vertex, DefaultEdge> generator;
+		generator = new ScaleFreeGraphGenerator<>(size);
+
+		generator.generateGraph(g, vFactory, null);
+		
+		KruskalMinimumSpanningTree<Vertex, DefaultEdge> mst = new KruskalMinimumSpanningTree<>(g);
+		SpanningTree<DefaultEdge> st = mst.getSpanningTree();
+
+		Graph<Vertex, DefaultEdge> h = new DefaultDirectedGraph<>(DefaultEdge.class);
+		
+		for (Vertex v : g.vertexSet())
+			h.addVertex(v);
+
+		for (DefaultEdge e : st) 
+			h.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e));
+		return h;
+	}
+	
+	
 	public static void main(String[] args) {
 		GraphGen gen = new GraphGen();
 		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 		
-		gen.star2(g, 10);
+		
 		
 
 
-		GraphViewer<Vertex, DefaultEdge> viewer = new GraphViewer<>(g);
+		GraphViewer<Vertex, DefaultEdge> viewer = new GraphViewer<>(gen.tree(g, 10));
 		
 		viewer.initComponents();
 	}

@@ -2,20 +2,22 @@ package activable_network;
 
 import interfaces.Activatable;
 
-public class Vertex implements Activatable{
-	 protected double threshold;
-	 protected int index;
-	 protected String name;
-	 protected boolean active;
-	 
+public class Vertex implements Activatable {
+	protected double threshold;
+	protected int index;
+	protected String name;
+	protected boolean active;
+	protected int weight;
+
 	public Vertex(String nome, int index) {
 		super();
 		this.index = index;
-		this.name = ""+index;
+		this.name = "" + index;
 	}
 
 	public Vertex(String name) {
-		this.name = name;	}
+		this.name = name;
+	}
 
 	public double getThreshold() {
 		return threshold;
@@ -40,7 +42,7 @@ public class Vertex implements Activatable{
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String toString() {
 		return name;
 	}
@@ -52,6 +54,14 @@ public class Vertex implements Activatable{
 
 	@Override
 	public void setActive(boolean active) {
-		this.active = active;		
+		this.active = active;
+	}
+
+	public void setWeight(int w) {
+		this.weight = w;
+	}
+	
+	public int getWeight(int w) {
+		return weight;
 	}
 }

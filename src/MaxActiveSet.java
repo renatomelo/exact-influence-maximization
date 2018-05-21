@@ -131,6 +131,7 @@ public class MaxActiveSet {
 		return model;
 	}
 
+
 	/**
 	 * Determine the threshold of each vertex in the graph
 	 * 
