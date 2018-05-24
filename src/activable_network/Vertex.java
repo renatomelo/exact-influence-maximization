@@ -12,7 +12,7 @@ public class Vertex implements Activatable {
 	public Vertex(String nome, int index) {
 		super();
 		this.index = index;
-		this.name = "" + index;
+		this.name = nome;
 	}
 
 	public Vertex(String name) {
@@ -61,7 +61,7 @@ public class Vertex implements Activatable {
 		this.weight = w;
 	}
 	
-	public int getWeight(int w) {
+	public int getWeight() {
 		return weight;
 	}
 }

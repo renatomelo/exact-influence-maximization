@@ -19,6 +19,7 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.RenderContext;
@@ -116,7 +117,6 @@ public class GraphViewer<V, E> extends JFrame {
 	// --- GUI components: ---
 	Container content;
 	private JPanel controls;
-	private JPanel zoomControls;
 	private JPanel layoutChoice = new JPanel();
 	private JComboBox jcb;
 	// private JComboBox<Layout<V,E>> jcb;
@@ -137,7 +137,8 @@ public class GraphViewer<V, E> extends JFrame {
 	@SuppressWarnings("unchecked")
 	public GraphViewer(Graph<V, E> graph) {
 		this.invokerGraph = graph;
-		this.graph = new DirectedSparseGraph<>();
+		// this.graph = new DirectedSparseGraph<>();
+		this.graph = new UndirectedSparseGraph<>();
 
 		for (V v : graph.vertexSet()) {
 			this.graph.addVertex(v);
@@ -171,8 +172,8 @@ public class GraphViewer<V, E> extends JFrame {
 		collapsedGraph = this.graph;
 		collapser = new GraphCollapser(this.graph);
 
-		layout = new FRLayout<V, E>(this.graph);
-	
+		layout = new KKLayout<V, E>(this.graph);
+
 		Dimension preferredSize = new Dimension(1024, 600);
 		final VisualizationModel<V, E> visualizationModel = new DefaultVisualizationModel<V, E>(layout, preferredSize);
 		canvas = new Canvas<V, E>(this, visualizationModel, preferredSize);
@@ -208,11 +209,11 @@ public class GraphViewer<V, E> extends JFrame {
 		// ---- Vertex color: ----
 		canvas.getRenderer().setVertexRenderer(new GradientVertexRenderer<V, E>(Color.white, Color.white, // colors in
 																											// normal
-																											// state
-				Color.orange, Color.orange, // colors in picked state
-				canvas.getPickedVertexState(), false));
-//		 canvas.getRenderContext().setVertexFillPaintTransformer(new
-//		 PickableVertexPaintTransformer<V>(canvas.getPickedVertexState(), Color.red, Color.yellow));
+		Color.orange, Color.orange, // colors in picked state
+		canvas.getPickedVertexState(), false));
+		// canvas.getRenderContext().setVertexFillPaintTransformer(new
+		// PickableVertexPaintTransformer<V>(canvas.getPickedVertexState(), Color.red,
+		// Color.yellow));
 
 		pickActivated();
 

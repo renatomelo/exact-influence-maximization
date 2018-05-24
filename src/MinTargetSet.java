@@ -221,7 +221,7 @@ public class MinTargetSet {
 		// Target set decision variables: s[v] == 1 if plant v is in S.
 		s = new GRBVar[n];
 		for (int v = 0; v < n; ++v) {
-			s[v] = model.addVar(0, 1, 0, GRB.BINARY, "s_" + v); // Testar com 1 no coef
+			s[v] = model.addVar(0, 1, 0, GRB.BINARY, "s_" + v);
 		}
 
 		// Set objective function: minimize s[0] + s[1] + ... + s[n-1]
@@ -290,6 +290,7 @@ public class MinTargetSet {
 		Set<Vertex> vSet = g.vertexSet();
 		Set<Vertex> tSet = new HashSet<Vertex>();
 		for (Vertex v : vSet) {
+			System.out.println("["+v.getIndex()+"] = " + s[v.getIndex()].get(GRB.DoubleAttr.X));
 			if (s[v.getIndex()].get(GRB.DoubleAttr.X) == 1)
 				tSet.add(v);
 		}
@@ -299,15 +300,16 @@ public class MinTargetSet {
 	public static void main(String[] args) {
 		GraphViewer<Vertex, DefaultEdge> viewer;
 
-		int size = 200;
-		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+		int size = 10;
+		//Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 
-		// Generate a random scale free graph
-		new GraphGen().scaleFree(g, size);
+//		new GraphGen().scaleFree(g, size);
 //		g = new GraphGen().tree(g, size);
+		Graph<Vertex, DefaultEdge> g = new GraphGen().wtss_instance2();
 
-		MinTargetSet tss = new MinTargetSet(g);
+//		MinTargetSet tss = new MinTargetSet(g);
 //		MaxActiveSet tss = new MaxActiveSet(g);
+		WTSS tss = new WTSS(g);
 		Set<Vertex> tSet = null;
 
 		// To work with a fixed graph
@@ -318,7 +320,7 @@ public class MinTargetSet {
 			GRBModel model;
 
 			env = new GRBEnv();
-			model = tss.IPModel3(env);
+			model = tss.IPModel2(env);
 			model.optimize();
 
 //			model.dispose();
