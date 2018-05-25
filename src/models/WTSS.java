@@ -1,3 +1,4 @@
+package models;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -17,20 +18,20 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import problems.TSS;
 
-public class WTSS {
-	private GRBVar[] s;
+public class WTSS extends TSS{
 	private GRBVar[][] direction;
-	private Graph<Vertex, DefaultEdge> g, dummy;
+	private Graph<Vertex, DefaultEdge> dummy;
 	private GRBModel model;
 	private int[] thr, weight;
 	private Set<Vertex> targetSet, V, D;
 
 	public WTSS(Graph<Vertex, DefaultEdge> g) {
-		this.g = g;
+		super(g);
 	}
 
-	public GRBModel IPModel(GRBEnv env) throws GRBException {
+	public GRBModel model(GRBEnv env) throws GRBException {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
 
@@ -96,15 +97,18 @@ public class WTSS {
 	 * @return
 	 * @throws GRBException
 	 */
-	public GRBModel IPModel2(GRBEnv env) throws GRBException {
+	public GRBModel model2(GRBEnv env) throws GRBException {
 		dummy = generateDummyGraph(g);
-		Set<Vertex> vSet = dummy.vertexSet();
-		int n = vSet.size();
+//		Set<Vertex> vSet = dummy.vertexSet();
+		int n = dummy.vertexSet().size();
 
+		 thr = majorityThreshold(g.vertexSet());
+		 weight = weight(g.vertexSet(), dummy);
+		
 		//Visualize dummy graph
-		GraphViewer<Vertex, DefaultEdge> viewer;
-		viewer = new GraphViewer<>(dummy);
-		viewer.initComponents();
+//		GraphViewer<Vertex, DefaultEdge> viewer;
+//		viewer = new GraphViewer<>(dummy);
+//		viewer.initComponents();
 		
 		// Model
 		model = new GRBModel(env);
@@ -163,11 +167,6 @@ public class WTSS {
 			}
 		}
 		
-		//getting the thresholds
-//		thr = new int[n];
-//		for (Vertex v : vSet) 
-//			thr[v.getIndex()] = (int) v.getThreshold();
-		
 		//Activation constraints: a vertex v will be activated if the number of
 		// active in-neighbors is at least 1
 		for (Vertex v : g.vertexSet()) {
@@ -187,9 +186,10 @@ public class WTSS {
 	 * 
 	 * @param vSet
 	 *            set of vertex
+	 * @param g 
 	 * @return a vector b of weights
 	 */
-	private int[] weight(Set<Vertex> vSet) {
+	private int[] weight(Set<Vertex> vSet, Graph<Vertex, DefaultEdge> g) {
 		int[] b = new int[vSet.size()];
 
 		Random r = new Random();
@@ -199,33 +199,6 @@ public class WTSS {
 			v.setWeight(b[v.getIndex()]);
 		}
 		return b;
-	}
-
-	/**
-	 * Determine the threshold of each vertex in the graph
-	 * 
-	 * @param vSet
-	 *            set of vertex
-	 * @return a vector of threshold
-	 */
-	private int[] majorityThreshold(Set<Vertex> vSet) {
-		int[] thr = new int[vSet.size()];
-		for (Vertex v : vSet) {
-			thr[v.getIndex()] = (int) g.inDegreeOf(v) / 2 + 1;
-			v.setThreshold(thr[v.getIndex()]);
-		}
-		return thr;
-	}
-
-	public Set<Vertex> getTargetSet() throws GRBException {
-		Set<Vertex> vSet = g.vertexSet();
-		Set<Vertex> tSet = new HashSet<Vertex>();
-		for (Vertex v : vSet) {
-			System.out.println("[" + v.getIndex() + "] = " + s[v.getIndex()].get(GRB.DoubleAttr.X));
-			if (s[v.getIndex()].get(GRB.DoubleAttr.X) == 1)
-				tSet.add(v);
-		}
-		return tSet;
 	}
 
 	/**
@@ -273,7 +246,7 @@ public class WTSS {
 	}
 
 	private Vertex dummyVertex(int i) {
-		Vertex d = new Vertex("d_" + i, i);
+		Vertex d = new Vertex("" + i, i);
 		d.setWeight(Integer.MAX_VALUE);
 		d.setThreshold(1);
 		return d;

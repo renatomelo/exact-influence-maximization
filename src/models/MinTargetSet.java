@@ -1,4 +1,4 @@
-import java.util.HashSet;
+package models;
 import java.util.Set;
 
 import org.jgrapht.Graph;
@@ -9,27 +9,24 @@ import activable_network.GraphGen;
 import activable_network.GraphViewer;
 import activable_network.Vertex;
 import gurobi.GRB;
-import gurobi.GRB.DoubleAttr;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import problems.TSS;
 
-public class MinTargetSet {
-	private GRBVar[] s;
-	private GRBVar[] a;
+public class MinTargetSet extends TSS{
 	private GRBVar[][] tournament;
 	private Graph<Vertex, DefaultEdge> g;
 	private GRBModel model;
 	private int[] thr;
-	private Set<Vertex> targetSet;
-
+	
 	public MinTargetSet(Graph<Vertex, DefaultEdge> g) {
-		this.g = g;
+		super(g);
 	}
 
-	public GRBModel IPModel(GRBEnv env) throws GRBException {
+	public GRBModel model(GRBEnv env) throws GRBException {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
 
@@ -105,7 +102,7 @@ public class MinTargetSet {
 		return model;
 	}
 
-	public GRBModel IPModel2(GRBEnv env) throws GRBException {
+	public GRBModel model2(GRBEnv env) throws GRBException {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
 
@@ -202,7 +199,7 @@ public class MinTargetSet {
 	/*
 	 * New model formulation to avoid the tournament constraints
 	 */
-	public GRBModel IPModel3(GRBEnv env) throws GRBException {
+	public GRBModel model3(GRBEnv env) throws GRBException {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
 
@@ -231,13 +228,6 @@ public class MinTargetSet {
 		model.setObjective(obj, GRB.MINIMIZE);
 		
 		GRBLinExpr lhs;
-		GRBLinExpr rhs;
-		
-		// Active set constraint: the size of the active set is equals to n
-//		lhs = new GRBLinExpr();
-//		for (int i = 0; i < n; i++)
-//			lhs.addTerm(1, a[i]);
-//		model.addConstr(lhs, GRB.EQUAL, n, "size_of_a");
 		
 		// Activation constraints: a vertex v will be activated if the number of
 		// active in-neighbors is at least t(v)
@@ -251,15 +241,7 @@ public class MinTargetSet {
 			model.addConstr(lhs, GRB.GREATER_EQUAL, thr[v.getIndex()], "activation_of_" + v.getName());
 		}
 		
-//		// Target set is in active set
-//		for (int i = 0; i < n; i++) {
-//			lhs = new GRBLinExpr();	lhs.addTerm(1, a[i]);
-//			rhs = new GRBLinExpr();	rhs.addTerm(1, s[i]);
-//			model.addConstr(lhs, GRB.GREATER_EQUAL, rhs, "tgt_actv" + i);
-//		}
-		
-		// Set as target each vertex with no
-		// in-neighbors
+		// Set as target each vertex with no in-neighbors
 		for (Vertex v : vSet) {
 			// s[v] >= 1 - in_deg(v)
 			lhs = new GRBLinExpr();
@@ -270,85 +252,31 @@ public class MinTargetSet {
 		return model;
 	}
 
-	/**
-	 * Determine the threshold of each vertex in the graph
-	 * 
-	 * @param vSet
-	 *            set of vertex
-	 * @return a vector of threshold
-	 */
-	private int[] majorityThreshold(Set<Vertex> vSet) {
-		int[] thr = new int[vSet.size()];
-		for (Vertex v : vSet) {
-			thr[v.getIndex()] = (int) g.inDegreeOf(v) / 2 + 1;
-			v.setThreshold(thr[v.getIndex()]);
-		}
-		return thr;
-	}
-
-	private Set<Vertex> getTargetSet() throws GRBException {
-		Set<Vertex> vSet = g.vertexSet();
-		Set<Vertex> tSet = new HashSet<Vertex>();
-		for (Vertex v : vSet) {
-			System.out.println("["+v.getIndex()+"] = " + s[v.getIndex()].get(GRB.DoubleAttr.X));
-			if (s[v.getIndex()].get(GRB.DoubleAttr.X) == 1)
-				tSet.add(v);
-		}
-		return tSet;
-	}
-
-	public static void main(String[] args) {
-		GraphViewer<Vertex, DefaultEdge> viewer;
-
-		int size = 10;
-		//Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
-
-//		new GraphGen().scaleFree(g, size);
-//		g = new GraphGen().tree(g, size);
-		Graph<Vertex, DefaultEdge> g = new GraphGen().wtss_instance2();
-
-//		MinTargetSet tss = new MinTargetSet(g);
-//		MaxActiveSet tss = new MaxActiveSet(g);
-		WTSS tss = new WTSS(g);
-		Set<Vertex> tSet = null;
-
-		// To work with a fixed graph
-
-		// Formulate a Integer Linear Program using the random graph as instance
-		try {
-			GRBEnv env;
-			GRBModel model;
-
-			env = new GRBEnv();
-			model = tss.IPModel2(env);
-			model.optimize();
-
-//			model.dispose();
-//			env.dispose();
-
-//			env = new GRBEnv();
-//			model = tss.IPModel2(env);
-//			model.optimize();
+//	/**
+//	 * Determine the threshold of each vertex in the graph
+//	 * 
+//	 * @param vSet
+//	 *            set of vertex
+//	 * @return a vector of threshold
+//	 */
+//	private int[] majorityThreshold(Set<Vertex> vSet) {
+//		int[] thr = new int[vSet.size()];
+//		for (Vertex v : vSet) {
+//			thr[v.getIndex()] = (int) g.inDegreeOf(v) / 2 + 1;
+//			v.setThreshold(thr[v.getIndex()]);
+//		}
+//		return thr;
+//	}
 //
-//			model.dispose();
-//			env.dispose();
-			
-//			env = new GRBEnv();
-//			model = tss.IPModel(env);
-//			model.optimize();
-			
-			tSet = tss.getTargetSet();
-			
-			model.dispose();
-			env.dispose();
-		} catch (GRBException e) {
-			System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-		}
+//	private Set<Vertex> getTargetSet() throws GRBException {
+//		Set<Vertex> vSet = g.vertexSet();
+//		Set<Vertex> tSet = new HashSet<Vertex>();
+//		for (Vertex v : vSet) {
+//			System.out.println("["+v.getIndex()+"] = " + s[v.getIndex()].get(GRB.DoubleAttr.X));
+//			if (s[v.getIndex()].get(GRB.DoubleAttr.X) == 1)
+//				tSet.add(v);
+//		}
+//		return tSet;
+//	}
 
-		 for (Vertex v : tSet)
-			 v.setActive(true);
-
-		 viewer = new GraphViewer<>(g);
-		 viewer.initComponents();
-	}
 }

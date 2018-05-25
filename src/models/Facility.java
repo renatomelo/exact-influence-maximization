@@ -1,3 +1,4 @@
+package models;
 /* Copyright 2017, Gurobi Optimization, Inc. */
 
 /* Facility location: a company currently ships its product from 5 plants

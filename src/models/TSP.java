@@ -1,3 +1,4 @@
+package models;
 import gurobi.*;
 
 public class TSP extends GRBCallback {
