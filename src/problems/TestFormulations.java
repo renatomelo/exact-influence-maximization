@@ -5,6 +5,7 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
 
 import activable_network.GraphGen;
 import activable_network.GraphViewer;
@@ -18,11 +19,13 @@ public class TestFormulations {
 	public static void main(String[] args) {
 		GraphViewer<Vertex, DefaultEdge> viewer;
 
-		int size = 500;
-		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
-
-//		new GraphGen().scaleFree(g, size);
-		g = new GraphGen().tree(g, size);
+		int size = 10;
+//		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+		Graph<Vertex, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
+		
+		new GraphGen().scaleFree(g, size);
+//		new GraphGen().gnp(g, size);
+//		g = new GraphGen().tree(g, size);
 //		Graph<Vertex, DefaultEdge> g = new GraphGen().wtss_instance2();
 
 //		MinTargetSet tss = new MinTargetSet(g);
@@ -36,7 +39,7 @@ public class TestFormulations {
 			GRBModel model;
 
 			env = new GRBEnv();
-			model = tss.IPModel2(env);
+			model = tss.model2(env);
 			model.optimize();
 
 //			model.dispose();

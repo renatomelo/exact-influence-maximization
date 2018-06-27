@@ -18,8 +18,6 @@ import problems.TSS;
 
 public class MinTargetSet extends TSS{
 	private GRBVar[][] tournament;
-	private Graph<Vertex, DefaultEdge> g;
-	private GRBModel model;
 	private int[] thr;
 	
 	public MinTargetSet(Graph<Vertex, DefaultEdge> g) {
@@ -33,6 +31,7 @@ public class MinTargetSet extends TSS{
 		thr = majorityThreshold(vSet);
 
 		// Model
+		GRBModel model;
 		model = new GRBModel(env);
 		model.set(GRB.StringAttr.ModelName, "MinTS");
 
@@ -109,6 +108,7 @@ public class MinTargetSet extends TSS{
 		thr = majorityThreshold(vSet);
 
 		// Model
+		GRBModel model;
 		model = new GRBModel(env);
 		model.set(GRB.StringAttr.ModelName, "MinTS");
 
@@ -206,6 +206,7 @@ public class MinTargetSet extends TSS{
 		thr = majorityThreshold(vSet);
 
 		// Model
+		GRBModel model;
 		model = new GRBModel(env);
 		model.set(GRB.StringAttr.ModelName, "no_tournament");
 		
@@ -251,32 +252,4 @@ public class MinTargetSet extends TSS{
 		
 		return model;
 	}
-
-//	/**
-//	 * Determine the threshold of each vertex in the graph
-//	 * 
-//	 * @param vSet
-//	 *            set of vertex
-//	 * @return a vector of threshold
-//	 */
-//	private int[] majorityThreshold(Set<Vertex> vSet) {
-//		int[] thr = new int[vSet.size()];
-//		for (Vertex v : vSet) {
-//			thr[v.getIndex()] = (int) g.inDegreeOf(v) / 2 + 1;
-//			v.setThreshold(thr[v.getIndex()]);
-//		}
-//		return thr;
-//	}
-//
-//	private Set<Vertex> getTargetSet() throws GRBException {
-//		Set<Vertex> vSet = g.vertexSet();
-//		Set<Vertex> tSet = new HashSet<Vertex>();
-//		for (Vertex v : vSet) {
-//			System.out.println("["+v.getIndex()+"] = " + s[v.getIndex()].get(GRB.DoubleAttr.X));
-//			if (s[v.getIndex()].get(GRB.DoubleAttr.X) == 1)
-//				tSet.add(v);
-//		}
-//		return tSet;
-//	}
-
 }
