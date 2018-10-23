@@ -137,8 +137,8 @@ public class GraphViewer<V, E> extends JFrame {
 	@SuppressWarnings("unchecked")
 	public GraphViewer(Graph<V, E> graph) {
 		this.invokerGraph = graph;
-		// this.graph = new DirectedSparseGraph<>();
-		this.graph = new UndirectedSparseGraph<>();
+		this.graph = new DirectedSparseGraph<>();
+		//this.graph = new UndirectedSparseGraph<>();
 
 		for (V v : graph.vertexSet()) {
 			this.graph.addVertex(v);

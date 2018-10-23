@@ -32,7 +32,7 @@ public class MinimumTargetSet {
 			GRBModel model = new GRBModel(env);
 			model.set(GRB.StringAttr.ModelName, "MTS");
 			
-			// Target set decision variables: s[v] == 1 if plant v is in S.
+			// Target set decision variables: s[v] == 1 if the vertex v is in S.
 			GRBVar[] s = new GRBVar[n];
 			for (int v = 0; v < n; ++v) {
 				s[v] = model.addVar(0, 1, 0, GRB.BINARY, "s_" +v);

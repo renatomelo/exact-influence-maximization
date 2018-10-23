@@ -11,7 +11,7 @@ public interface OptimizationProblem {
 	public int getProblemSize();
 	public double getValue();
 	public OptimizationProblemSolution getSolution();
-	public boolean isValid(OptimizationProblemSolution ops);
+	public boolean isFeasible(OptimizationProblemSolution ops);
 	public OptimizationProblem[] branch();
 	public void performUpperBounding(double upperbound);
 }

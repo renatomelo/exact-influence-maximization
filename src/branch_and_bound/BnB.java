@@ -11,7 +11,7 @@ public class BnB {
 
 	static double M = Double.MAX_VALUE / 1000;
 	private long nodesGenerated = 0;
-	private double elapsedTime = 0;
+	private double elapsedtime = 0;
 	private OptProblemComparison opc;
 
 	public BnB(OptimizationProblem problem) {
@@ -25,16 +25,16 @@ public class BnB {
 
 	public OptimizationProblem solve() {
 		OptimizationProblem problem, relaxation;
-		double Li;
-		Date time0 = new Date();
+		double lowerbound;
+		Date time = new Date();
 
 		while (activeproblems.size() > 0) {
 			problem = selectProblem();
 			relaxation = problem.getRelaxation();
-			Li = relaxation.getValue();
-			if (Li < U) {
-				if (P.isValid(relaxation.getSolution())) {
-					U = Li;
+			lowerbound = relaxation.getValue();
+			if (lowerbound < U) {
+				if (P.isFeasible(relaxation.getSolution())) {
+					U = lowerbound;
 					this.currentbest = relaxation;
 				} else {
 					//optimal upper bounding
@@ -51,7 +51,7 @@ public class BnB {
 		}
 		
 		Date time1 = new Date();
-		this.elapsedTime = (double) (time1.getTime() - time0.getTime())/1000;
+		this.elapsedtime = (double) (time1.getTime() - time.getTime())/1000;
 		return currentbest;
 	}
 
@@ -68,7 +68,7 @@ public class BnB {
 	}
 	
 	public double getElapsedTime() {
-		return this.elapsedTime;
+		return this.elapsedtime;
 	}
 	
 	public long getNodeCount() {

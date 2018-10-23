@@ -36,7 +36,11 @@ public abstract class TSS {
 	public int[] majorityThreshold(Set<Vertex> vSet) {
 		int[] thr = new int[vSet.size()];
 		for (Vertex v : vSet) {
-			thr[v.getIndex()] = (int) g.inDegreeOf(v) / 2 + 1;
+			if (g.inDegreeOf(v) == 0) {
+				thr[v.getIndex()] = 1;
+			} else {
+				thr[v.getIndex()] = (int) Math.ceil((double) g.inDegreeOf(v) / 2);
+			}
 			v.setThreshold(thr[v.getIndex()]);
 		}
 		return thr;
