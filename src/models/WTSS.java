@@ -8,10 +8,12 @@ import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
+import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
 import activable_network.Vertex;
+import activable_network.*;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -21,12 +23,51 @@ import gurobi.GRBVar;
 import problems.TSS;
 
 public class WTSS extends TSS {
-	private GRBVar[][] direction, h;
+//	private GRBVar[][] direction, h;
 	private Graph<Vertex, DefaultEdge> dummy;
-	private Set<Vertex> D;
+	private Set<Vertex> D; //set of dummy nodes in the dummy graph
 
 	public WTSS(Graph<Vertex, DefaultEdge> g) {
 		super(g);
+	}
+	
+	/**
+	 * Determine the threshold of each vertex in the undirected graph
+	 * 
+	 * @param vSet
+	 *            set of vertex
+	 * @return a vector of threshold
+	 */
+	public int[] majorityThreshold(Set<Vertex> vSet) {
+		int[] thr = new int[vSet.size()];
+		
+		for (Vertex v : vSet) {
+			if (g.degreeOf(v) == 0) {
+				thr[v.getIndex()] = 1;
+			} else {
+				thr[v.getIndex()] = (int) Math.ceil((double) g.degreeOf(v) / 2);
+			}
+			v.setThreshold(thr[v.getIndex()]);
+		}
+		return thr;
+	}
+	
+	public DefaultDirectedGraph<Vertex, DefaultEdge> getSolutionGraph() throws GRBException {
+		DefaultDirectedGraph<Vertex, DefaultEdge> solution = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+		for (Vertex v : g.vertexSet()) 
+			solution.addVertex(v);
+		
+		for (DefaultEdge e : g.edgeSet()) {
+			Vertex v = g.getEdgeSource(e);
+			Vertex w = g.getEdgeTarget(e);
+			if(direction[v.getIndex()][w.getIndex()].get(GRB.DoubleAttr.X) == 1)
+				solution.addEdge(v, w);
+			else if(direction[w.getIndex()][v.getIndex()].get(GRB.DoubleAttr.X) == 1)
+				solution.addEdge(w, v);
+		}
+		
+		return solution;
 	}
 
 	public GRBModel model(GRBEnv env) throws GRBException {
@@ -39,7 +80,7 @@ public class WTSS extends TSS {
 		// Model
 		GRBModel model;
 		model = new GRBModel(env);
-		model.set(GRB.StringAttr.ModelName, "MinTS");
+		model.set(GRB.StringAttr.ModelName, "WTSS");
 
 		// Target set decision variables: s[v] == 1 if plant v is in S.
 		s = new GRBVar[n];
@@ -78,7 +119,7 @@ public class WTSS extends TSS {
 		for (Vertex v : vSet) {
 			lhs = new GRBLinExpr();
 			for (Vertex u : Graphs.neighborListOf(g, v))
-				lhs.addTerm(1, direction[v.getIndex()][u.getIndex()]);
+				lhs.addTerm(1, direction[u.getIndex()][v.getIndex()]);
 
 			lhs.addTerm(v.getThreshold(), s[v.getIndex()]);
 
@@ -89,8 +130,8 @@ public class WTSS extends TSS {
 	}
 
 	/**
-	 * tight and compact extended formulation for the WTSS problem on trees from S.
-	 * Raghavan's paper
+	 * Tight and compact extended formulation for the WTSS problem on trees from 
+	 * S. Raghavan's paper
 	 * 
 	 * @param env
 	 * @return
@@ -103,27 +144,27 @@ public class WTSS extends TSS {
 		majorityThreshold(g.vertexSet());
 		assignWeight(g.vertexSet());
 
-		// Visualize dummy graph
-		// GraphViewer<Vertex, DefaultEdge> viewer;
-		// viewer = new GraphViewer<>(dummy);
-		// viewer.initComponents();
+//		 Visualize the dummy graph
+		 GraphViewer<Vertex, DefaultEdge> viewer;
+		 viewer = new GraphViewer<>(dummy);
+		 viewer.initComponents();
 
 		// Model
 		GRBModel model;
 		model = new GRBModel(env);
-		model.set(GRB.StringAttr.ModelName, "MinTS");
+		model.set(GRB.StringAttr.ModelName, "WTSS");
 
 		// Target set decision variables: s[v] == 1 if plant v is in S.
 		s = new GRBVar[g.vertexSet().size()];
 		for (int v = 0; v < g.vertexSet().size(); ++v) {
-			s[v] = model.addVar(0, 1, 0, GRB.CONTINUOUS, "s_" + v);
+			s[v] = model.addVar(0, 1, 0, GRB.BINARY, "s_" + v);
 		}
 
-		// Influence direction variables: h[u][v] = 1 if the influence goes from u to v
-		direction = new GRBVar[n][n];
+		// Influence direction variables: y[u][d] = 1 if the influence goes from u to d
+		y = new GRBVar[n][n];
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				direction[i][j] = model.addVar(0, 1, 0, GRB.CONTINUOUS, "e_" + i + "" + j);
+				y[i][j] = model.addVar(0, 1, 0, GRB.BINARY, "y_" + i + "" + j);
 			}
 		}
 
@@ -139,7 +180,7 @@ public class WTSS extends TSS {
 		for (Vertex d : D) {
 			lhs = new GRBLinExpr();
 			for (Vertex v : Graphs.neighborListOf(dummy, d))
-				lhs.addTerm(1, direction[v.getIndex()][d.getIndex()]);
+				lhs.addTerm(1, y[v.getIndex()][d.getIndex()]);
 
 			model.addConstr(lhs, GRB.GREATER_EQUAL, 1, "incoming_of_" + d.getName());
 		}
@@ -150,17 +191,17 @@ public class WTSS extends TSS {
 				lhs = new GRBLinExpr();
 				rhs = new GRBLinExpr();
 				lhs.addTerm(1, s[v.getIndex()]);
-				rhs.addTerm(1, direction[v.getIndex()][d.getIndex()]);
+				rhs.addTerm(1, y[v.getIndex()][d.getIndex()]);
 				model.addConstr(lhs, GRB.LESS_EQUAL, rhs, "s_" + v.getIndex() + "<=y_" + d.getIndex());
 			}
 		}
 
-		// direction of the arcs: h_uv + h_vu = 1 for i != j
+		// direction of the arcs: y_ud + h_du = 1 for i != j
 		for (Vertex d : D) {
 			for (Vertex w : Graphs.neighborListOf(dummy, d)) {
 				lhs = new GRBLinExpr();
-				lhs.addTerm(1, direction[w.getIndex()][d.getIndex()]);
-				lhs.addTerm(1, direction[d.getIndex()][w.getIndex()]);
+				lhs.addTerm(1, y[w.getIndex()][d.getIndex()]);
+				lhs.addTerm(1, y[d.getIndex()][w.getIndex()]);
 				model.addConstr(lhs, GRB.EQUAL, 1, "arc_" + d.getName() + "" + w.getName());
 			}
 		}
@@ -170,7 +211,7 @@ public class WTSS extends TSS {
 		for (Vertex v : g.vertexSet()) {
 			lhs = new GRBLinExpr();
 			for (Vertex d : Graphs.neighborListOf(dummy, v)) {
-				lhs.addTerm(1, direction[d.getIndex()][v.getIndex()]);
+				lhs.addTerm(1, y[d.getIndex()][v.getIndex()]);
 			}
 			lhs.addTerm(v.getThreshold(), s[v.getIndex()]);
 			model.addConstr(lhs, GRB.EQUAL, v.getThreshold(), "activatin_of_" + v.getName());
@@ -328,7 +369,8 @@ public class WTSS extends TSS {
 		Random r = new Random();
 
 		for (Vertex v : g.vertexSet())
-			v.setWeight(r.nextInt(vSet.size() - 1) + 1);
+//			v.setWeight(r.nextInt(vSet.size() - 1) + 1);
+			v.setWeight(1);
 	}
 
 	/**
