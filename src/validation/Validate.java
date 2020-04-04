@@ -20,10 +20,10 @@ public class Validate {
 		GraphViewer<Vertex, DefaultEdge> viewer;
 
 		int size = 100;
-		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+		Graph<Vertex, DefaultEdge> g; //= new DefaultDirectedGraph<>(DefaultEdge.class);
 //		Graph<Vertex, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
 		
-		new GraphGen().scaleFree(g, size);
+		g = new GraphGen().scaleFree(size);
 //		new GraphGen().gnp(g, size);
 //		g = new GraphGen().tree(g, size);
 //		Graph<Vertex, DefaultEdge> g = new GraphGen().wtss_instance2();

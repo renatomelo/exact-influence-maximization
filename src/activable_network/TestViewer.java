@@ -5,7 +5,7 @@ import javax.swing.JApplet;
 import javax.swing.JFrame;
 
 import org.jgrapht.Graph;
-import org.jgrapht.VertexFactory;
+//import org.jgrapht.VertexFactory;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.generate.ScaleFreeGraphGenerator;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -40,16 +40,16 @@ public class TestViewer extends JApplet{
 		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 		ScaleFreeGraphGenerator<Vertex, DefaultEdge> generator = new ScaleFreeGraphGenerator<>(size );
 		
-		VertexFactory<Vertex> vFactory = new VertexFactory<Vertex>() {
+		/*VertexFactory<Vertex> vFactory = new VertexFactory<Vertex>() {
 			int index = 0;
 			@Override
 			public Vertex createVertex() {
 				
 				return new Vertex("v" + index++);
 			}
-		};
+		};*/
 		
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 		
 		adapter = new JGraphXAdapter<>(g);
 		

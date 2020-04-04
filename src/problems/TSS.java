@@ -1,6 +1,7 @@
 package problems;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import org.jgrapht.Graph;
@@ -43,6 +44,21 @@ public abstract class TSS {
 				thr[v.getIndex()] = 1;
 			} else {
 				thr[v.getIndex()] = (int) Math.ceil((double) g.inDegreeOf(v) / 2);
+			}
+			v.setThreshold(thr[v.getIndex()]);
+		}
+		return thr;
+	}
+	
+	public int[] randomThreshold(Set<Vertex> vSet) {
+		int[] thr = new int[vSet.size()];
+		Random r = new Random();
+		for (Vertex v : vSet) {
+			if (g.inDegreeOf(v) <= 1) {
+				thr[v.getIndex()] = 1;
+			} else {
+				int t = r.nextInt(g.inDegreeOf(v) - 1) + 1;
+				thr[v.getIndex()] = t;
 			}
 			v.setThreshold(thr[v.getIndex()]);
 		}

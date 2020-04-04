@@ -1,15 +1,24 @@
 package activable_network;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
-import org.jgrapht.VertexFactory;
+//import org.jgrapht.VertexFactory;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
 import org.jgrapht.generate.BarabasiAlbertGraphGenerator;
 import org.jgrapht.generate.CompleteGraphGenerator;
+import org.jgrapht.generate.DirectedScaleFreeGraphGenerator;
 import org.jgrapht.generate.GnpRandomGraphGenerator;
 import org.jgrapht.generate.KleinbergSmallWorldGraphGenerator;
 import org.jgrapht.generate.ScaleFreeGraphGenerator;
@@ -17,88 +26,184 @@ import org.jgrapht.generate.StarGraphGenerator;
 import org.jgrapht.generate.WattsStrogatzGraphGenerator;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.DirectedPseudograph;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.traverse.BreadthFirstIterator;
+import org.jgrapht.util.SupplierUtil;
 
 public class GraphGen {
 
-	VertexFactory<Vertex> vFactory = new VertexFactory<Vertex>() {
+	/*VertexFactory<Vertex> vFactory = new VertexFactory<Vertex>() {
 		int index = 0;
 
 		public Vertex createVertex() {
-			Vertex v = new Vertex("v" + index, index);
+			Vertex v = new Vertex("v" + (index + 1), index);
 			index++;
 			return v;
 		}
-	};
+	};*/
+	
+	// Create the VertexFactory so the generator can create vertices
+    Supplier<Vertex> vSupplier = new Supplier<Vertex>()
+    {
+        private int id = 0;
 
-	public void scaleFree(Graph<Vertex, DefaultEdge> g, int size) {
+        @Override
+        public Vertex get()
+        {
+        	Vertex v = new Vertex("v" + (id + 1), id);
+			id++;
+			return v;
+        }
+    };
+
+	public Graph<Vertex, DefaultEdge> scaleFree(int size) {
 		ScaleFreeGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new ScaleFreeGraphGenerator<>(size);
+		
+		Graph<Vertex, DefaultEdge> g;
 
-		generator.generateGraph(g, vFactory, null);
+		g = new SimpleDirectedGraph<>(vSupplier, SupplierUtil.createDefaultEdgeSupplier(), false);
+		//generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
+		return g;
+	}
+	
+	public Graph<Vertex, DefaultEdge> directedScaleFree(int size) {
+		DirectedScaleFreeGraphGenerator<Vertex, DefaultEdge> generator;
+		//generator = new DirectedScaleFreeGraphGenerator<>(0.25f, 0.5f, 0.25f,0, -10, size);
+		generator = new DirectedScaleFreeGraphGenerator<>(0.33f, 0.33f, 0.5f, 0.5f, -10, size);
+		
+		Graph<Vertex, DefaultEdge> g; 
+		
+		g = new DirectedPseudograph<>(vSupplier, SupplierUtil.createDefaultEdgeSupplier(), false);
+		//generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
+		
+		//removing selfloops
+		Set<DefaultEdge> selfloops = new HashSet<>();
+		for (DefaultEdge e : g.edgeSet()) {
+			if (g.getEdgeSource(e) == g.getEdgeTarget(e)) {
+				selfloops.add(e);
+				//g.removeEdge(e);
+				//System.out.println("removing selfloop");
+			}
+		}
+		g.removeAllEdges(selfloops);
+	
+		return g;
 	}
 
 	/**
-	 * Not working for now
+	 * Watts-Strogatz small-world graph generator adapted for directed graphs.
 	 * 
 	 * @param g
 	 * @param size
+	 * @param k
 	 */
-	public void wattsStrogatz(Graph<Vertex, DefaultEdge> g, int size) {
-		WattsStrogatzGraphGenerator<Vertex, DefaultEdge> generator;
-		generator = new WattsStrogatzGraphGenerator<>(size, size / 5, .35);
+	/*public void wattsStrogatz(Graph<Vertex, DefaultEdge> g, int size, int k, double p) {
+		Random rnd = new Random();
+		
+		// special cases
+        if (size == 0) {
+            return;
+        } else if (size == 1) {
+            g.addVertex(vFactory.createVertex());
+            return;
+        }
 
-		generator.generateGraph(g, vFactory, null);
-	}
+        // create ring lattice
+        List<Vertex> ring = new ArrayList<>(size);
+        Map<Vertex, List<DefaultEdge>> adj = new LinkedHashMap<>(size);
+
+        for (int i = 0; i < size; i++) {
+        	Vertex v = vFactory.createVertex();
+            if (!g.addVertex(v)) {
+                throw new IllegalArgumentException("Invalid vertex factory");
+            }
+            ring.add(v);
+            adj.put(v, new ArrayList<>(k));
+        }
+
+        for (int i = 0; i < size; i++) {
+            Vertex v = ring.get(i);
+            List<DefaultEdge> vAdj = adj.get(v);
+
+            for (int j = 1; j <= k / 2; j++) {
+            	Vertex w = ring.get((i + j) % size);
+                vAdj.add(g.addEdge(v, w));
+                vAdj.add(g.addEdge(w, v)); //for directed graphs
+            }
+        }
+
+        // re-wire edges
+        for (int r = 0; r < k / 2; r++) {
+            for (int i = 0; i < size; i++) {
+                Vertex v = ring.get(i);
+                DefaultEdge e = adj.get(v).get(r);
+
+                if (rnd.nextDouble() < p) {
+                    Vertex w = ring.get(rnd.nextInt(size));
+                    if (!w.equals(v) && !g.containsEdge(v, w)) {
+                    	g.removeEdge(e);
+                        g.addEdge(v, w);
+                    }
+                }
+            }
+        }
+	}*/
 
 	public void gnp(Graph<Vertex, DefaultEdge> g, int size) {
 		GnpRandomGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new GnpRandomGraphGenerator<>(size, .35);
 
-		generator.generateGraph(g, vFactory, null);
+		//generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 	}
 
 	public void barabasiAlbert(Graph<Vertex, DefaultEdge> g, int size) {
 		BarabasiAlbertGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new BarabasiAlbertGraphGenerator<>(size / 2, 3, size);
 
-		generator.generateGraph(g, vFactory, null);
+		//generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 	}
 
 	public void kleibergSmallWorld(Graph<Vertex, DefaultEdge> g, int size) {
 		KleinbergSmallWorldGraphGenerator<Vertex, DefaultEdge> generator;
-		generator = new KleinbergSmallWorldGraphGenerator<>(size, 1, 1, 2);
+		generator = new KleinbergSmallWorldGraphGenerator<>(size, 1, 3, 2);
 
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 	}
 
 	public void complete(Graph<Vertex, DefaultEdge> g, int size) {
 		CompleteGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new CompleteGraphGenerator<>(size);
 
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 	}
 
 	public void star(Graph<Vertex, DefaultEdge> g, int size) {
 		StarGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new StarGraphGenerator<>(size);
 
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 	}
 
 	public void bipartite(Graph<Vertex, DefaultEdge> g, int size) {
 		StarGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new StarGraphGenerator<>(size);
 
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 	}
 
 	public Graph<Vertex, DefaultEdge> star2(Graph<Vertex, DefaultEdge> g, int size) {
 		CompleteGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new CompleteGraphGenerator<>(size);
 
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 
 		KruskalMinimumSpanningTree<Vertex, DefaultEdge> mst = new KruskalMinimumSpanningTree<>(g);
 		SpanningTree<DefaultEdge> st = mst.getSpanningTree();
@@ -113,11 +218,12 @@ public class GraphGen {
 		return h;
 	}
 
+	
 	public Graph<Vertex, DefaultEdge> tree(Graph<Vertex, DefaultEdge> g, int size) {
 		ScaleFreeGraphGenerator<Vertex, DefaultEdge> generator;
 		generator = new ScaleFreeGraphGenerator<>(size);
 
-		generator.generateGraph(g, vFactory, null);
+		generator.generateGraph(g, null);
 
 		KruskalMinimumSpanningTree<Vertex, DefaultEdge> mst = new KruskalMinimumSpanningTree<>(g);
 		SpanningTree<DefaultEdge> st = mst.getSpanningTree();

@@ -26,12 +26,14 @@ public class TestFormulations {
 		model = tss.model(env);
 		// model.set(GRB.DoubleParam.TimeLimit, 1000.0);
 		model.set(GRB.IntParam.LogToConsole, 0);
+		model.set(GRB.DoubleParam.TimeLimit, 1800);
 		model.optimize();
 
 		double runningtime = model.get(GRB.DoubleAttr.Runtime);
-		System.out.println("Objetive Value: " + model.get(GRB.DoubleAttr.ObjVal));
+		System.out.println("Objetive: " + model.get(GRB.DoubleAttr.ObjVal) + 
+						   ", Gap: " + model.get(GRB.DoubleAttr.MIPGap));
 		// System.out.printf("Running time: %f\n", runningtime);
-
+		
 		// System.out.println("\n");
 		model.dispose();
 		env.dispose();
@@ -46,10 +48,12 @@ public class TestFormulations {
 		model = tss.model2(env);
 		// model.set(GRB.DoubleParam.TimeLimit, 1000.0);
 		model.set(GRB.IntParam.LogToConsole, 0);
+		model.set(GRB.DoubleParam.TimeLimit, 1800);
 		model.optimize();
 
 		double runningtime = model.get(GRB.DoubleAttr.Runtime);
-		System.out.println("Objetive Value: " + model.get(GRB.DoubleAttr.ObjVal));
+		System.out.println("Objetive: " + model.get(GRB.DoubleAttr.ObjVal) + 
+				   		   ", Gap: " + model.get(GRB.DoubleAttr.MIPGap));
 		// System.out.printf("Running time: %f \n", runningtime);
 		// System.out.println("\n");
 		// tSet = tss.getTargetSet();
@@ -118,26 +122,28 @@ public class TestFormulations {
 	 * @throws GRBException
 	 */
 	void simular() throws GRBException {
-		for (int i = 1; i <= 15; i++) {
+		int n = 10; // fix in 10 or 30
+		for (int i = 2; i <= 15; i++) {
 			double t1 = 0, t2 = 0, t3 = 0, t4 = 0;
 			int size = 0;
 
-			for (int j = 0; j < 30; j++) {
+			for (int j = 0; j < n; j++) {
 				size = i * 10;
-				Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+				//Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 				// Graph<Vertex, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
 
-				new GraphGen().scaleFree(g, size);
+				Graph<Vertex, DefaultEdge> g = new GraphGen().directedScaleFree(size);
 
 				MinTargetSet tss = new MinTargetSet(g);
 				// MaxActiveSet tss = new MaxActiveSet(g);
 				// WTSS tss = new WTSS(g);
 				t1 = t1 + medel1(tss);
 				t2 = t2 + medel2(tss);
-				t3 = t3 + medel3(tss);
-				t4 = t4 + model4(tss);
+				//t3 = t3 + medel3(tss);
+				//t4 = t4 + model4(tss);
 			}
-			System.out.printf("\n%d \t\t%f \t\t %f \t\t %f \t\t %f\n", size, t1 / i, t2 / i, t3 / i, t4 / i);
+			//System.out.printf("\n%d \t\t%f \t\t %f \t\t %f \t\t %f\n", size, t1 / i, t2 / i, t3 / i, t4 / i);
+			System.out.printf("\n%d \t\t %f \t\t %f\n", size, (t1 / n), (t2 / n));
 			System.out.println();
 		}
 	}
@@ -148,18 +154,18 @@ public class TestFormulations {
 		Graph<Vertex, DefaultEdge> solution = null;
 		// Formulate a Integer Linear Program using the random graph as instance
 		try {
-			// teste.simular();
+			teste.simular();
 
-			Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+			/*Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
 			// Graph<Vertex, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
-			new GraphGen().scaleFree(g, 15);
+			new GraphGen().scaleFree(g, 20);
 			MinTargetSet tss = new MinTargetSet(g);
 			// WTSS tss = new WTSS(g);
 
 			GRBEnv env;
 			GRBModel model;
 			env = new GRBEnv();
-			model = tss.model3(env);
+			model = tss.model2(env);
 			// model.set(GRB.IntParam.Presolve, 0);
 			// model.set(GRB.IntParam.LogToConsole, 0);
 			model.optimize();
@@ -167,7 +173,7 @@ public class TestFormulations {
 			System.out.println("\nObjetive Value: " + model.get(GRB.DoubleAttr.ObjVal));
 
 			tSet = tss.getTargetSet();
-//			solution = tss.getSolutionGraph();
+			//solution = tss.getSolutionGraph();
 			// TODO a method to simulate the spread for a given target set in order to
 			// validate the solution
 			model.dispose();
@@ -176,7 +182,7 @@ public class TestFormulations {
 			for (Vertex v : tSet)
 				 v.setActive(true);
 			viewer = new GraphViewer<>(g);
-			viewer.initComponents();
+			viewer.initComponents();*/
 
 		} catch (GRBException e) {
 			System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());

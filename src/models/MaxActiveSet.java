@@ -163,10 +163,10 @@ public class MaxActiveSet {
 		GraphViewer<Vertex, DefaultEdge> viewer;
 
 		int size = 5;
-		Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+		Graph<Vertex, DefaultEdge> g; // = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 		// Generate a random scale free graph
-		new GraphGen().scaleFree(g, size);
+		g = new GraphGen().scaleFree(size);
 
 		MaxActiveSet tss = new MaxActiveSet(g);
 		Set<Vertex> tSet = null;
