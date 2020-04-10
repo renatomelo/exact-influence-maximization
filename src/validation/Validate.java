@@ -45,9 +45,9 @@ public class Validate {
 			model.dispose();
 			env.dispose();
 
-			env = new GRBEnv();
-			model = tss.model2(env);
-			model.optimize();
+//			env = new GRBEnv();
+//			model = tss.model2(env);
+//			model.optimize();
 
 			model.dispose();
 			env.dispose();

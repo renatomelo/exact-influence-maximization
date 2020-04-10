@@ -79,7 +79,6 @@ public class GraphGen {
 		Graph<Vertex, DefaultEdge> g; 
 		
 		g = new DirectedPseudograph<>(vSupplier, SupplierUtil.createDefaultEdgeSupplier(), false);
-		//generator.generateGraph(g, vFactory, null);
 		generator.generateGraph(g, null);
 		
 		//removing selfloops
@@ -92,6 +91,17 @@ public class GraphGen {
 			}
 		}
 		g.removeAllEdges(selfloops);
+		
+		//removing multiple edges
+		for (Vertex v : g.vertexSet()) {
+			for (Vertex w : g.vertexSet()) {
+				if (g.getAllEdges(v, w).size() > 1) {
+					g.removeAllEdges(g.getAllEdges(v, w));
+					g.addEdge(v, w);
+					//System.out.println("removing multi edges of " + v + ", " + w);
+				}
+			}		
+		}		
 	
 		return g;
 	}
@@ -349,10 +359,13 @@ public class GraphGen {
 
 	public static void main(String[] args) {
 		GraphGen gen = new GraphGen();
+		Graph<Vertex, DefaultEdge> g = gen.directedScaleFree(20);
+		System.out.println(g.edgeSet());
+		
 		// Graph<Vertex, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
-		Graph<Vertex, DefaultEdge> g = gen.wtss_instance2();
-		GraphViewer<Vertex, DefaultEdge> viewer = new GraphViewer<>(g);
+		//Graph<Vertex, DefaultEdge> g = gen.wtss_instance2();
+		//GraphViewer<Vertex, DefaultEdge> viewer = new GraphViewer<>(g);
 
-		viewer.initComponents();
+		//viewer.initComponents();
 	}
 }
