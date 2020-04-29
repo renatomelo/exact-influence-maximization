@@ -1,5 +1,6 @@
 package models;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -26,14 +27,14 @@ public class MinTargetSet extends TSS {
 
 	public MinTargetSet(Graph<Vertex, DefaultEdge> g) {
 		super(g);
-		this.thr = majorityThreshold(g.vertexSet());
+		//this.thr = majorityThreshold(g.vertexSet());
+		//this.thr = smallThreshold(g.vertexSet());
+		this.thr = largeThreshold(g.vertexSet());
 	}
 
 	public GRBModel model(GRBEnv env) throws GRBException {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
-
-		//thr = majorityThreshold(vSet);
 
 		// Model
 		GRBModel model;
@@ -123,34 +124,38 @@ public class MinTargetSet extends TSS {
 
 		Graph<Vertex, DefaultEdge> h;
 
-		Vertex[] vertices = new Vertex[g.vertexSet().size()];
+		//Vertex[] vertices = new Vertex[g.vertexSet().size()];
+		//the key is the original node and value the copy node to use only in construction
+		Map<Vertex, Vertex> vertices = new HashMap<>();
 
 		h = new DirectedPseudograph<>(supplier, SupplierUtil.createDefaultEdgeSupplier(), false);
 		int i = 0;
 		for (Vertex v : g.vertexSet()) {
 			Vertex w = h.addVertex();
-			vertices[i++] = w;
+			//vertices[i++] = w;
 			nodeRef.put(w, v);
+			vertices.put(v, w);
 		}
 
 		for (DefaultEdge e : g.edgeSet()) {
-			int j = g.getEdgeSource(e).getIndex();
-			int k = g.getEdgeTarget(e).getIndex();
-			DefaultEdge a = h.addEdge(vertices[j], vertices[k]);
+			//int j = g.getEdgeSource(e).getIndex();
+			//int k = g.getEdgeTarget(e).getIndex();
+			Vertex u = g.getEdgeSource(e);
+			Vertex v = g.getEdgeTarget(e);
+			DefaultEdge a = h.addEdge(vertices.get(u), vertices.get(v));
 			arcRef.put(a, e);
 		}
 
-		for (i = 0; i < vertices.length; i++) {
+		/*for (i = 0; i < vertices.length; i++) {
 			Vertex v = vertices[i];
 			if (h.inDegreeOf(v) == 0) {
 				System.out.println("removing " + v);
 				h.removeVertex(v);
 			}
-
 		}
 		for (Vertex v : g.vertexSet()) {
 			System.out.println(v);
-		}
+		}*/
 
 		return h;
 	}
@@ -363,7 +368,7 @@ public class MinTargetSet extends TSS {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
 
-		thr = majorityThreshold(vSet);
+		//thr = majorityThreshold(vSet);
 
 		// Model
 		GRBModel model;
@@ -413,7 +418,7 @@ public class MinTargetSet extends TSS {
 		Set<Vertex> vSet = g.vertexSet();
 		int n = vSet.size();
 
-		thr = majorityThreshold(vSet);
+		//thr = majorityThreshold(vSet);
 
 		// Model
 		GRBModel model;

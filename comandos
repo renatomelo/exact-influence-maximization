@@ -1,0 +1,21 @@
+# Configure the output
+set terminal eps
+
+set output "dist.eps"
+
+# Plota o resultado usando escala normal.
+set xlabel  "Degree"
+set ylabel "Number of vertices"
+set nokey
+plot "distribuicao.dat" using 1:2 with points lc 8 pt 3
+
+set output "dist_loglog.eps"
+
+# Plota o resultado usando escala loglog.
+set xlabel  "Degree"
+set ylabel "Number of vertices"
+set nokey
+set logscale xy
+plot "distribuicao.dat" using 1:2 with points lc 8 pt 3
+
+

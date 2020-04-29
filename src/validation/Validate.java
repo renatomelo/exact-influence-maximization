@@ -64,9 +64,6 @@ public class Validate {
 			System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
 		}
 
-//		 for (Vertex v : tSet)
-//			 v.setActive(true);
-//
 //		 viewer = new GraphViewer<>(g);
 //		 viewer.initComponents();
 	}
