@@ -159,7 +159,7 @@ public class TestFormulations {
 	 */
 	void simular() throws GRBException {
 		int n = 10; // fix in 10 or 30
-		for (int i = 40; i <= 100; i++) {
+		for (int i = 48; i <= 100; i++) {
 			double t1 = 0, t2 = 0, t3 = 0, t4 = 0;
 			int size = 0;
 
