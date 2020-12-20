@@ -1,3 +1,4 @@
+# Plot degree distribution
 # Configure the output
 set terminal eps
 
@@ -17,5 +18,3 @@ set ylabel "Number of vertices"
 set nokey
 set logscale xy
 plot "distribuicao.dat" using 1:2 with points lc 8 pt 3
-
-
