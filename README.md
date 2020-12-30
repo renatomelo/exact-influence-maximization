@@ -18,5 +18,5 @@ Random Graph Generative Models:
 - Kleiberg Small World model
 - Barabási–Albert model
 
-The method `preprocessing(...)` in src/models/MinTargetSet.java class is the implementation of the preprocessing rules proposed in my following paper:
+The method `preprocessing(...)` in `src/models/MinTargetSet.java` class is the implementation of the preprocessing rules proposed in my following paper:
 - [Preprocessing Rules for Target Set Selection in Complex Networks](https://sol.sbc.org.br/index.php/brasnam/article/view/11167)
